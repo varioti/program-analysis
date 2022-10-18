@@ -1,12 +1,12 @@
 x := 0
-y := 0
+y := 2
 z := -3
 if w > 0 goto 7
-w := x * z
+w := x / x
 goto 8
 w := z * z
 if w > 0 goto 12
 z := y * z
 y := w
 goto 8
-x := z * z
+x := z / z

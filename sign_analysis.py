@@ -1,22 +1,24 @@
-# Init operators 
-
-from tkinter import TOP
-
-
+# Init operators and abstract values
 op_num = ["+","-","*","/"]
 op_bool = ["<","="]
 
-T0P = "top"
+TOP = "top"
 Z = "zero"
 P = "positive"
 N = "negative"
 BOT = "bottom"
+
+# INSTRUCTIONS REPRESENTATION #########################################################
 
 # Classes for the 5 types of instructions with : 
     # a flow function specific for each type
     # a get_vars function which returns all variables of the instruction
 
 class Assign_Constant:
+    """ 
+    Represents var := cst 
+    where cst belong to Z 
+    """
     def __init__(self, newvar, newcst):
         self.var = newvar
         self.cst = newcst
@@ -43,6 +45,11 @@ class Assign_Constant:
         return [self.var]
 
 class Assign_Operation:
+    """ 
+    Represents var := val1 <op> val2 
+    where val1(2) is : - a variable if val1(2)IsVar is true
+                       - a constant otherwise 
+    """
     def __init__(self, newvar, newop):
         self.var = newvar
         
@@ -157,6 +164,10 @@ class Assign_Operation:
         return vars
 
 class Assign_Var:
+    """ 
+    Represents var1 := var
+    where var1 and var2 are variables
+    """
     def __init__(self, newvar1, newvar2):
         self.var1 = newvar1
         self.var2 = newvar2
@@ -179,6 +190,12 @@ class Assign_Var:
         return [self.var1, self.var2]
 
 class Branch:
+    """ 
+    Represents if val <bool op> 0 goto <goto> 
+    where val is : - a variable if valIsVar is true
+                   - a constant otherwise,
+          <goto> is an instruction number 
+    """
     def __init__(self, newcomp, newgoto):
         # Check if 1st value is constant or variable
         if newcomp[0] == "-" or newcomp.isnumeric() :
@@ -195,12 +212,14 @@ class Branch:
         return "if"+self.comp+"0goto"+str(self.goto)
 
     def flow_function(self, vars):
-        return vars.copy()
+        outvars = vars.copy()
+        if self.valIsVar :
+            outvars[self.val] = TOP
+        return outvars
 
     def succ(self, index, end):
-        if index+1 < end :
-            return [index+1,self.goto]
-        return []
+        return [index+1,self.goto]
+
 
     def get_vars(self):
         if self.valIsVar :
@@ -208,6 +227,10 @@ class Branch:
         return []
 
 class Goto:
+    """
+    Represents goto <goto>
+    where <goto> is an instruction number 
+    """
     def __init__(self, newgoto):
         self.goto = newgoto
 
@@ -218,15 +241,17 @@ class Goto:
         return vars.copy()
 
     def succ(self, index, end):
-        if self.goto <= end :
-            return [self.goto]
-        return []
+        return [self.goto]
+
 
     def get_vars(self):
         return []
 
-# General class for an instruction which instanciate one of 5 specific instruction and uses its specific method
+
 class Instruction:
+    """
+    General class for an instruction which instanciate one of 5 specific instruction and uses its specific method
+    """
     def __init__(self, str_instruction):
         # Remove spaces
         clean_str = str_instruction.replace(" ","") 
@@ -268,7 +293,8 @@ class Instruction:
     def get_vars(self):
         return self.instruction.get_vars()
 
-# ANALYSIS ############################################################################
+# UTILS FUNCTIONS #####################################################################
+
 def read_file(filename):
     """ Returns the w3a program in a list where each line is an element of the list """
     f = open(filename, "r")
@@ -277,7 +303,7 @@ def read_file(filename):
     return program
 
 def read_program(program):
-    """ Returns the program as a list of objects Instruction and a list of all variables of the programm"""
+    """ Returns the program as a list of objects Instruction and the input table where all variables are initialized to BOTTOM """
     instructions = [None] # 0 added in order to have instruction 1 at position 1 in the list
     input = [{}]
     vars = []
@@ -308,6 +334,7 @@ def join(x,y):
         return x
 
 def is_less_precise(output, input):
+    """ Returns true if <output> is not more precise than <input>, false otherwise """
     is_more_precise = True
     for var in output.keys() :
         if input[var] != output[var] and ((output[var] in [Z,P,N] and input[var] == BOT) or (output[var] == TOP and input[var] in [Z,P,N])) :
@@ -315,8 +342,10 @@ def is_less_precise(output, input):
 
     return not is_more_precise
 
+# WORKLIST ALGORITHM ##################################################################
 
-def analysis(filename) :
+def worklist_algo(filename) :
+    """ Applies Worklist algorithm to a program and returns the final input and output abstract values of all variables of the programm """
     program = read_file(filename)
     instructions, input = read_program(program)
     output = {}
@@ -336,10 +365,37 @@ def analysis(filename) :
 
     return input, output
 
+# ANALYSIS ##################################################################
 
+def analysis_div_by_zero(filename) :
+    instructions,_ = read_program(read_file(filename))
+    input,_ = worklist_algo(filename)
+    
+    # Filter division instructions
+    div_instructions = {}
+    for i in range(len(instructions)-1) :
+        instr = instructions[i+1].instruction
+        if isinstance(instr,Assign_Operation) and instr.op == "/" and instr.val2IsVar :
+            
+            if input[i+1][instr.val2] == Z :
+                print("ERROR: DIV BY 0 (Line %i: denominator is 0)" % (i+1))
 
-# Main
-inp,out = analysis("codes/if_loop.w3a")
+            if input[i+1][instr.val2] == TOP :
+                print("INFO: DIV BY 0 (Line %i: denominator value unknown)" % (i+1))
 
-print(inp)
-print(out)
+# MAIN ###################################################################### 
+
+filename = "codes/if_loop.w3a"
+analysis_div_by_zero(filename)
+
+# Show the input and the output tables
+if True :
+    print("--------------- INPUTS LIST ---------------")
+    inp,out = worklist_algo(filename)
+    num = 0
+    for i in inp :
+        print(str(num) + ": " + str(i))
+        num += 1
+    print("-------------- OUTPUTS LIST ---------------")
+    for key in sorted(out.keys()) :
+        print(str(key) + ": " + str(out[key]))
