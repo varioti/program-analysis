@@ -1,0 +1,6 @@
+x := 0
+if w > 0 goto 5
+z := x / x
+goto 6
+z := x + 5
+x := 5 

@@ -108,11 +108,11 @@ class Assign_Operation:
             abs_val2 = vars[self.val2]
 
         # Compute abstract value of the expression
-        if self.op == ["/"] and abs_val1 == 0 or abs_val2 == 0 :
+        if self.op == "/" and abs_val2 == Z :
             out_vars[self.var] = BOT
         
-        elif abs_val1 == 0 or abs_val2 == 0 :  
-                out_vars[self.var] = Z
+        elif abs_val1 == Z and abs_val2 == Z :  
+            out_vars[self.var] = Z
         
         elif self.op in ["*","/"] :
             if abs_val1 == Z :
@@ -385,7 +385,7 @@ def analysis_div_by_zero(filename) :
 
 # MAIN ###################################################################### 
 
-filename = "codes/if_loop.w3a"
+filename = "codes/branch.w3a"
 analysis_div_by_zero(filename)
 
 # Show the input and the output tables
