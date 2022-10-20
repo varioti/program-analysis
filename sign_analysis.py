@@ -1,5 +1,5 @@
 # Init filename to perform the analysis and show_tables
-filename = "codes/branch.w3a"
+filename = "codes/if_loop.w3a"
 show_tables = True # if True : output and input tables printed
                    # if False : not printed 
 
