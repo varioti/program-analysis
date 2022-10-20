@@ -108,44 +108,44 @@ class Assign_Operation:
             abs_val2 = vars[self.val2]
 
         # Compute abstract value of the expression
-        if self.op == "/" and abs_val2 == Z :
+        if self.op == "/" and abs_val2 == Z : # div by 0
             out_vars[self.var] = BOT
         
-        elif abs_val1 == Z and abs_val2 == Z :  
+        elif abs_val1 == Z and abs_val2 == Z : # mult, add and sub 0 and 0 = 0
             out_vars[self.var] = Z
         
         elif self.op in ["*","/"] :
-            if abs_val1 == Z :
+            if abs_val1 == Z : # 0 * n and 0 / n = 0 
                 out_vars[self.var] = abs_val2
-            elif abs_val2 == Z :
+            elif abs_val2 == Z : # n * 0 = 0 (n / 0 already covered)
                 out_vars[self.var] = abs_val1    
-            elif abs_val1 == abs_val2 and abs_val1 in [N,P] : # if 
+            elif abs_val1 == abs_val2 and abs_val1 in [N,P] : # mult and div with same sign = positive 
                 out_vars[self.var] = P
-            elif abs_val1 != abs_val2 and abs_val1 in [N,P] and abs_val2 in [N,P] :
+            elif abs_val1 != abs_val2 and abs_val1 in [N,P] and abs_val2 in [N,P] : # mult and div with different sign = negative
                 out_vars[self.var] = N
-            else :
+            else : # otherwise => top
                 out_vars[self.var] = TOP
 
         elif self.op == "+" :
-            if abs_val1 == Z :
+            if abs_val1 == Z : # 0 + n = n
                 out_vars[self.var] = abs_val2
-            elif abs_val2 == Z :
+            elif abs_val2 == Z : # n + 0 = n
                 out_vars[self.var] = abs_val1
-            else :
+            else : # otherwise => join 2 values
                 out_vars[self.var] = join(abs_val1,abs_val2)
-        else :
+        else : # substraction
             if abs_val1 == Z :
-                if abs_val2 == P :
+                if abs_val2 == P : # 0 - n = -n
                     out_vars[self.var] = N
-                elif abs_val2 == N : 
+                elif abs_val2 == N : # 0 - (-n) = n
                     out_vars[self.var] = P
-            elif abs_val2 == Z :
+            elif abs_val2 == Z : # n - 0 = n
                 out_vars[self.var] = abs_val1
-            elif abs_val1 == P and abs_val2 == N :
+            elif abs_val1 == P and abs_val2 == N : # n - (-m) => pos
                 out_vars[self.var] = P
-            elif abs_val1 == N and abs_val2 == P :
+            elif abs_val1 == N and abs_val2 == P :# (-n) - m => neg
                 out_vars[self.var] = N
-            else : 
+            else : # otherwise => TOPS
                 out_vars[self.var] = TOP
 
         return out_vars
@@ -371,15 +371,16 @@ def analysis_div_by_zero(filename) :
     instructions,_ = read_program(read_file(filename))
     input,_ = worklist_algo(filename)
     
-    # Filter division instructions
-    div_instructions = {}
     for i in range(len(instructions)-1) :
         instr = instructions[i+1].instruction
+        # Check if instruction is a division operation
         if isinstance(instr,Assign_Operation) and instr.op == "/" and instr.val2IsVar :
             
+            # Denominator is 0 => ERROR
             if input[i+1][instr.val2] == Z :
                 print("ERROR: DIV BY 0 (Line %i: denominator is 0)" % (i+1))
 
+            # Analysis doesn't know denominator value (could be 0 or sth else) => WARNING
             if input[i+1][instr.val2] == TOP :
                 print("INFO: DIV BY 0 (Line %i: denominator value unknown)" % (i+1))
 
