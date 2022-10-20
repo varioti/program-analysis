@@ -1,3 +1,8 @@
+# Init filename to perform the analysis and show_tables
+filename = "codes/branch.w3a"
+show_tables = True # if True : output and input tables printed
+                   # if False : not printed 
+
 # Init operators and abstract values
 op_num = ["+","-","*","/"]
 op_bool = ["<","="]
@@ -386,11 +391,10 @@ def analysis_div_by_zero(filename) :
 
 # MAIN ###################################################################### 
 
-filename = "codes/branch.w3a"
 analysis_div_by_zero(filename)
 
 # Show the input and the output tables
-if True :
+if show_tables :
     print("--------------- INPUTS LIST ---------------")
     inp,out = worklist_algo(filename)
     num = 0
