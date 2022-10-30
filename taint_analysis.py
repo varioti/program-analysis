@@ -25,10 +25,16 @@ class Procedure:
     def __init__(self, newname, newarg=None):
         self.name = newname
         self.instructions = []
-        # Init arg and ret values to BOT
+        
+        self.vars = []
+        
+        self.callees = []
+        self.callers = []
+
+        self.input = {}
+        self.output = {}
         self.arg = newarg
         self.ret = None
-        self.vars = []
 
     def add_instruction(self, newinstr):
         self.instructions.append(newinstr)
@@ -36,12 +42,43 @@ class Procedure:
     def add_return(self, newreturn):
         self.ret = newreturn
 
+        # Init input and output tables to BOT
+        for i in range(len(self.instructions)-1):
+            self.input[i+1] = {}
+            self.output[i+1] = {}
+            for var in self.vars:
+                self.input[i+1][var] = BOT
+                self.output[i+1][var] = BOT
+
     def add_vars(self, newvars):
         self.vars = (self.vars + list(set(newvars) - set(self.vars)))
 
+    def add_callee(self, new_callee):
+        if not new_callee in self.callees:
+            self.callees.append(new_callee)
+
+    def add_caller(self, new_caller):
+        if not new_caller in self.callers:
+            self.callers.append(new_caller)
+
+    def analysis(self):
+        worklist = [1]
+        while len(worklist) > 0 :
+            index_instruction = worklist[0]
+            worklist.pop(0)
+            self.output[index_instruction] = self.instructions[index_instruction].flow_function(self.input[index_instruction])
+            successors = self.instructions[index_instruction].succ(index_instruction,len(self.instructions))
+
+            for succ in successors :
+                if is_less_precise(self.output[index_instruction], self.input[succ]) :
+                    for var in input[succ] :
+                        self.input[succ][var] = join(self.input[succ][var], self.output[index_instruction][var])
+                    worklist.append(succ)
+                       
+
 # INSTRUCTIONS REPRESENTATION #########################################################
 
-# Classes for the 5 types of instructions with : 
+# Classes for the 6 types of instructions with : 
     # a flow function specific for each type
     # a get_vars function which returns all variables of the instruction
 
@@ -392,6 +429,14 @@ def read_program(program):
             functions[current_program].add_vars(i.get_vars())
             functions[current_program].add_instruction(i)
 
+            if isinstance(i.instruction, Proc_Call):
+                 functions[current_program].add_callee(i.instruction.proc_name)
+
+    # Add callers in function (by using all functions callees)
+    for f_name in functions.keys():
+        for callee in functions[f_name].callees:
+            functions[callee].add_caller(f_name)
+
     return functions
 
 def join(x,y):
@@ -422,7 +467,11 @@ def worklist_algo(filename) :
     """ Applies Worklist algorithm to a program and returns the final input and output abstract values of all variables of the programm """
     program = read_file(filename)
     functions = read_program(program)
-    print(functions["main"].vars)
+
+    wlp = ["main"]
+
+    print(functions["main"].callers)
+    print(functions["main"].callees)
 
 worklist_algo(filename)
 
