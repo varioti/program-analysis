@@ -21,7 +21,7 @@ def read_program(program):
     functions = {}
     
     current_program = None
-    for i in range(len(program)-1):
+    for i in range(len(program)):
         line = program[i].replace(" ","")
         print(line)
         if "procedure" == line[:9]:
@@ -36,7 +36,8 @@ def read_program(program):
         elif "return" == line[:6]:
             functions[current_program].add_return(line[6:])
 
-        elif line == "endprocedure":
+        elif "endprocedure" in line:
+            functions[current_program].end_procedure()
             current_program = None
 
         else :
@@ -64,8 +65,9 @@ def worklist_algo(filename) :
 
     wlp = ["main"]
 
-    print(functions["main"].callers)
-    print(functions["main"].callees)
+    functions["main"].analysis()
+    print(functions["main"].output)
+
 
 worklist_algo(filename)
 

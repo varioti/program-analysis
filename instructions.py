@@ -12,6 +12,7 @@ class Assign_Constant:
     where cst belong to Z 
     """
     def __init__(self, newvar, newcst):
+        print("cst")
         self.var = newvar
         self.cst = newcst
 
@@ -29,18 +30,12 @@ class Assign_Constant:
         return out_vars
 
     def succ(self, index, end):
-        if index+1 < end :
+        if index+1 <= end :
             return [index+1]
         return []
 
     def get_vars(self):
         return [self.var]
-
-    def init_tables(self):
-        for i in range(len(self.instructions)-1):
-            self.input.append({})
-            for var in self.vars:
-                self.input[i+1][var] = BOT
 
 class Assign_Operation:
     """ 
@@ -248,7 +243,7 @@ class Proc_Call:
     """
     Represents var := proc_name(proc_arg) 
     """
-    def __init__(self, newvar, newname, newarg):
+    def __init__(self, newvar, newname, newarg=None):
         self.var = newvar
         self.proc_name = newname
         self.proc_arg = newarg
@@ -260,10 +255,15 @@ class Proc_Call:
         return vars.copy()
 
     def succ(self, index, end):
-        return [self.goto]
+        if index+1 < end :
+            return [index+1]
+        return []
 
     def get_vars(self):
-        return [self.var, self.proc_arg]
+        vars = [self.var]
+        if not self.proc_arg is None:
+            vars.append(self.proc_arg)
+        return vars
 
 
 class Instruction:
