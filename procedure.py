@@ -27,8 +27,8 @@ class Procedure:
         self.input = {}
         self.output = {}
 
-        self.arg = newarg
-        self.ret = None
+        self.arg = [newarg]
+        self.ret = []
 
     def add_instruction(self, newinstr):
         self.nb_instructions+=1

@@ -1,3 +1,4 @@
+from copy import deepcopy
 from utils import *
 from procedure import Procedure
 from instructions import *
@@ -63,10 +64,46 @@ def worklist_algo(filename) :
     program = read_file(filename)
     functions = read_program(program)
 
+    # Init args and ret
+    args = {}
+    ret = {}
+    for f_name in functions.keys():
+        f = functions[f_name]
+        if f.name == "main":
+            initialize = TOP
+        else:  
+            initialize = BOT
+
+        args[f.name] = {}
+        for a in f.arg :
+            args[f.name][a] = initialize
+
+        ret[f.name] = {}
+        for r in f.ret :
+            ret[f.name][r] = initialize
+
+    # Init wlp
     wlp = ["main"]
 
-    functions["main"].analysis()
-    print(functions["main"].output)
+    # Main loop
+    while len(wlp) > 0:
+        p = functions[wlp[0]]
+        wlp.pop(0)
+
+        args_2 = deepcopy(args)
+        ret_2 = deepcopy(ret)
+
+        p.analysis()
+
+        callees = p.callees
+        for q in callees:
+            if args[q] != args_2[q]:
+                wlp.append(q)
+        
+        if ret_2[p.name] != ret[p.name]:
+            callers = p.callers
+            for r in callers:
+                wlp.append(r)
 
 
 worklist_algo(filename)
