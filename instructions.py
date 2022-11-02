@@ -1,3 +1,4 @@
+from xxlimited import new
 from utils import *
 
 # INSTRUCTIONS REPRESENTATION #########################################################
@@ -252,7 +253,9 @@ class Proc_Call:
         return self.var + ":="+ self.proc_name +"(" +str(self.proc_arg)+")"
 
     def flow_function(self, vars, args, ret):
-        return vars.copy()
+        new_vars = vars.copy()
+        new_vars[self.var] = ret[self.proc_name][0]
+        return new_vars
 
     def succ(self, index, end):
         if index+1 < end :
