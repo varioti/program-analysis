@@ -251,7 +251,7 @@ class Proc_Call:
     def __str__(self):
         return self.var + ":="+ self.proc_name +"(" +str(self.proc_arg)+")"
 
-    def flow_function(self, vars):
+    def flow_function(self, vars, args, ret):
         return vars.copy()
 
     def succ(self, index, end):
@@ -307,8 +307,11 @@ class Instruction:
     def __str__(self):
         return str(self.instruction)
 
-    def flow_function(self, vars):
-        return self.instruction.flow_function(vars)
+    def flow_function(self, vars, args, ret):
+        if isinstance(self.instruction,Proc_Call):
+            return self.instruction.flow_function(vars, args, ret)
+        else:    
+            return self.instruction.flow_function(vars)
 
     def succ(self, index, end):
         return self.instruction.succ(index, end)

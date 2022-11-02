@@ -1,4 +1,3 @@
-from copy import deepcopy
 from utils import *
 from instructions import *
 
@@ -57,9 +56,9 @@ class Procedure:
         if not new_caller in self.callers:
             self.callers.append(new_caller)
 
-    def analysis(self):
-        new_input = deepcopy(self.input)
-        new_output = deepcopy(self.output)
+    def analysis(self, args, ret):
+        new_input = self.input.copy()
+        new_output = self.output.copy()
 
         worklist = [1]
 

@@ -1,4 +1,3 @@
-from copy import deepcopy
 from utils import *
 from procedure import Procedure
 from instructions import *
@@ -90,8 +89,8 @@ def worklist_algo(filename) :
         p = functions[wlp[0]]
         wlp.pop(0)
 
-        args_2 = deepcopy(args)
-        ret_2 = deepcopy(ret)
+        args_2 = args.copy()
+        ret_2 = ret.copy()
 
         p.analysis()
 
