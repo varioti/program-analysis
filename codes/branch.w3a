@@ -1,8 +1,8 @@
 procedure double(x)
-    y := 2
+    y := x
     return y
 end procedure
-procedure main()
-    z := 2
-    w := double(z)
+procedure main(z)
+    v := z
+    w := double(v)
 end procedure

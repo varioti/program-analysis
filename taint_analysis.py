@@ -38,7 +38,6 @@ def read_program(program):
             functions[current_program].add_return(line[6:])
 
         elif "endprocedure" in line:
-            functions[current_program].end_procedure()
             current_program = None
 
         else :

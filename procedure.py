@@ -40,7 +40,7 @@ class Procedure:
     def add_return(self, newreturn):
         self.ret.append(newreturn)
 
-    def end_procedure(self):
+    def init_input_output(self, args, ret):
         # Init input and output tables to BOT
         for i in range(self.nb_instructions):
             self.input[i+1] = {}
@@ -48,6 +48,8 @@ class Procedure:
             for var in self.vars:
                 self.input[i+1][var] = BOT
                 self.output[i+1][var] = BOT
+                if var in self.arg :
+                    self.input[i+1][var] = args[self.name][0]
 
     def add_vars(self, newvars):
         self.vars = list(dict.fromkeys(self.vars+newvars))
@@ -62,7 +64,7 @@ class Procedure:
 
     def analysis(self, args, ret):
         # Init input and output list to BOT
-        self.end_procedure()
+        self.init_input_output(args,ret)
 
         # But analyze with new value of arg
         if len(self.arg) > 0 :
