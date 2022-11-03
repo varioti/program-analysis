@@ -22,12 +22,7 @@ class Assign_Constant:
 
     def flow_function(self, vars):
         out_vars = vars.copy()
-        if self.cst == 0 :
-            out_vars[self.var] = Z
-        elif self.cst > 0 :
-            out_vars[self.var] = P
-        else :
-            out_vars[self.var] = N
+        out_vars[self.var] = C
         return out_vars
 
     def succ(self, index, end):
@@ -80,67 +75,24 @@ class Assign_Operation:
     def flow_function(self, vars):
         out_vars = vars.copy()
         # Compute abstract value of 1st value in the expression
-        if not self.val1IsVar : # constant
-            if self.val1 == 0 :
-                abs_val1 = Z
-            elif self.val1 < 0 :
-                abs_val1 = N
-            else :
-                abs_val1 = P
+        if not self.val1IsVar : # constant is clean
+            abs_val1 = C
         else : # variable (with already an abstract value)
             abs_val1 = vars[self.val1]
 
         # Compute abstract value of 2nd value in the expression
         if not self.val2IsVar : # constant
-            if self.val2 == 0 :
-                abs_val2 = Z
-            elif self.val2 < 0 :
-                abs_val2 = N
-            else :
-                abs_val2 = P
+            abs_val2 = C
         else : # variable (with already an abstract value)
             abs_val2 = vars[self.val2]
 
         # Compute abstract value of the expression
-        if self.op == "/" and abs_val2 == Z : # div by 0
-            out_vars[self.var] = BOT
-        
-        elif abs_val1 == Z and abs_val2 == Z : # mult, add and sub 0 and 0 = 0
-            out_vars[self.var] = Z
-        
-        elif self.op in ["*","/"] :
-            if abs_val1 == Z : # 0 * n and 0 / n = 0 
-                out_vars[self.var] = abs_val2
-            elif abs_val2 == Z : # n * 0 = 0 (n / 0 already covered)
-                out_vars[self.var] = abs_val1    
-            elif abs_val1 == abs_val2 and abs_val1 in [N,P] : # mult and div with same sign = positive 
-                out_vars[self.var] = P
-            elif abs_val1 != abs_val2 and abs_val1 in [N,P] and abs_val2 in [N,P] : # mult and div with different sign = negative
-                out_vars[self.var] = N
-            else : # otherwise => top
-                out_vars[self.var] = TOP
-
-        elif self.op == "+" :
-            if abs_val1 == Z : # 0 + n = n
-                out_vars[self.var] = abs_val2
-            elif abs_val2 == Z : # n + 0 = n
-                out_vars[self.var] = abs_val1
-            else : # otherwise => join 2 values
-                out_vars[self.var] = join(abs_val1,abs_val2)
-        else : # substraction
-            if abs_val1 == Z :
-                if abs_val2 == P : # 0 - n = -n
-                    out_vars[self.var] = N
-                elif abs_val2 == N : # 0 - (-n) = n
-                    out_vars[self.var] = P
-            elif abs_val2 == Z : # n - 0 = n
-                out_vars[self.var] = abs_val1
-            elif abs_val1 == P and abs_val2 == N : # n - (-m) => pos
-                out_vars[self.var] = P
-            elif abs_val1 == N and abs_val2 == P :# (-n) - m => neg
-                out_vars[self.var] = N
-            else : # otherwise => TOPS
-                out_vars[self.var] = TOP
+        if abs_val1 == abs_val2 and abs_val1 == C:
+            out_vars[self.var] = C
+        elif abs_val1 == T or abs_val2 == T :
+            out_vars[self.var] = T
+        else :
+            out_vars[self.var] = TOP
 
         return out_vars
 
@@ -206,10 +158,7 @@ class Branch:
         return "if"+self.comp+"0goto"+str(self.goto)
 
     def flow_function(self, vars):
-        outvars = vars.copy()
-        if self.valIsVar :
-            outvars[self.val] = TOP
-        return outvars
+        return vars.copy()
 
     def succ(self, index, end):
         return [index+1,self.goto]

@@ -3,9 +3,8 @@ op_num = ["+","-","*","/"]
 op_bool = ["<","="]
 
 TOP = "top"
-Z = "zero"
-P = "positive"
-N = "negative"
+T = "taint"
+C = "clean"
 BOT = "bottom" 
 
 def join(x,y):
@@ -14,7 +13,7 @@ def join(x,y):
         return TOP
     if x == y :
         return x
-    if x != y and x in [P,N,Z] and y in [P,N,Z] :
+    if x != y and x in [T,C] and y in [T,C] :
         return TOP
     if x == BOT :
         return y
@@ -25,7 +24,7 @@ def is_less_precise(output, input):
     """ Returns true if <output> is not more precise than <input>, false otherwise """
     is_more_precise = True
     for var in output.keys() :
-        if input[var] != output[var] and ((output[var] in [Z,P,N] and input[var] == BOT) or (output[var] == TOP and input[var] in [Z,P,N])) :
+        if input[var] != output[var] and ((output[var] in [T,C] and input[var] == BOT) or (output[var] == TOP and input[var] in [T,C])) :
             is_more_precise = False
 
     return not is_more_precise

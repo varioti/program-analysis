@@ -69,17 +69,17 @@ def worklist_algo(filename) :
     for f_name in functions.keys():
         f = functions[f_name]
         if f.name == "main":
-            initialize = TOP
+            initialize = {"arg":T,"ret":TOP}
         else:  
-            initialize = BOT
+            initialize = {"arg":BOT,"ret":BOT}
 
         args[f.name] = {}
         for a in f.arg :
-            args[f.name][a] = initialize
+            args[f.name][a] = initialize["arg"]
 
         ret[f.name] = {}
         for r in f.ret :
-            ret[f.name][r] = initialize
+            ret[f.name][r] = initialize["ret"]
 
     # Init wlp
     wlp = ["main"]
