@@ -1,5 +1,5 @@
 procedure double(x)
-    y := 2 * x
+    y := 2
     return y
 end procedure
 procedure main()
