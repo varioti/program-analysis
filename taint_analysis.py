@@ -1,3 +1,4 @@
+from copy import deepcopy
 from utils import *
 from procedure import Procedure
 from instructions import *
@@ -23,7 +24,7 @@ def read_program(program):
     current_program = None
     for i in range(len(program)):
         line = program[i].replace(" ","")
-        print(line)
+
         if "procedure" == line[:9]:
             fnc_name = line[9:].split("(")[0]
             fnc_arg = line[9:].split("(")[1].split(")")[0]
@@ -63,7 +64,7 @@ def worklist_algo(filename) :
     program = read_file(filename)
     functions = read_program(program)
 
-    # Init args and ret
+    # Init args and ret (TOP for main anf BOT for the rest)
     args = {}
     ret = {}
     for f_name in functions.keys():
@@ -73,13 +74,13 @@ def worklist_algo(filename) :
         else:  
             initialize = BOT
 
-        args[f.name] = {}
-        for a in f.arg :
-            args[f.name][a] = initialize
+        args[f.name] = []
+        for _ in f.arg :
+            args[f.name].append(initialize)
 
-        ret[f.name] = {}
-        for r in f.ret :
-            ret[f.name][r] = initialize
+        ret[f.name] = []
+        for _ in f.ret :
+            ret[f.name].append(initialize)
 
     # Init wlp
     wlp = ["main"]
@@ -89,20 +90,24 @@ def worklist_algo(filename) :
         p = functions[wlp[0]]
         wlp.pop(0)
 
-        args_2 = args.copy()
-        ret_2 = ret.copy()
+        args_2 = deepcopy(args)
+        ret_2 = deepcopy(ret)
 
-        p.analysis()
+        args, ret = p.analysis(args,ret)
 
-        callees = p.callees
-        for q in callees:
+        # Check procedures which are called by current function
+        pcallees = p.callees
+        for q in pcallees:
             if args[q] != args_2[q]:
                 wlp.append(q)
         
+        # Chech procedures which call current function
         if ret_2[p.name] != ret[p.name]:
-            callers = p.callers
-            for r in callers:
+            pcallers = p.callers
+            for r in pcallers:
                 wlp.append(r)
+
+        print(functions["main"].output)
 
 
 worklist_algo(filename)

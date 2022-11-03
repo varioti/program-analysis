@@ -1,4 +1,3 @@
-from xxlimited import new
 from utils import *
 
 # INSTRUCTIONS REPRESENTATION #########################################################
@@ -13,7 +12,6 @@ class Assign_Constant:
     where cst belong to Z 
     """
     def __init__(self, newvar, newcst):
-        print("cst")
         self.var = newvar
         self.cst = newcst
 
@@ -145,7 +143,7 @@ class Assign_Operation:
         return out_vars
 
     def succ(self, index, end):
-        if index+1 < end :
+        if index+1 <= end :
             return [index+1]
         return []
 
@@ -176,7 +174,7 @@ class Assign_Var:
         return out_vars
 
     def succ(self, index, end):
-        if index+1 < end :
+        if index+1 <= end :
             return [index+1]
         return []
     
@@ -253,12 +251,15 @@ class Proc_Call:
         return self.var + ":="+ self.proc_name +"(" +str(self.proc_arg)+")"
 
     def flow_function(self, vars, args, ret):
-        new_vars = vars.copy()
-        new_vars[self.var] = ret[self.proc_name][0]
-        return new_vars
+        outvars = vars.copy()
+        outargs = args.copy()
+        outvars[self.var] = ret[self.proc_name][0]
+        outargs[self.proc_name][0] = vars[self.proc_arg]
+
+        return outvars, outargs, ret
 
     def succ(self, index, end):
-        if index+1 < end :
+        if index+1 <= end :
             return [index+1]
         return []
 
@@ -314,7 +315,7 @@ class Instruction:
         if isinstance(self.instruction,Proc_Call):
             return self.instruction.flow_function(vars, args, ret)
         else:    
-            return self.instruction.flow_function(vars)
+            return self.instruction.flow_function(vars), args, ret
 
     def succ(self, index, end):
         return self.instruction.succ(index, end)
