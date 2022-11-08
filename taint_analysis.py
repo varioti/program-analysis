@@ -58,7 +58,7 @@ def read_program(program):
 
 # WORKLIST ALGORITHM ##################################################################
 
-def worklist_algo(filename) :
+def interprocedural_analysis(filename) :
     """ Applies Worklist algorithm to a program and returns the final input and output abstract values of all variables of the programm """
     program = read_file(filename)
     functions = read_program(program)
@@ -106,61 +106,42 @@ def worklist_algo(filename) :
             for r in pcallers:
                 wlp.append(r)
 
-        print(functions["main"].output)
+    return args, ret, functions
 
-
-worklist_algo(filename)
-
-"""
-    worklist = [1]
-    while len(worklist) > 0 :
-        index_instruction = worklist[0]
-        worklist.pop(0)
-        output[index_instruction] = instructions[index_instruction].flow_function(input[index_instruction])
-        successors = instructions[index_instruction].succ(index_instruction,len(instructions))
-
-        for succ in successors :
-            if is_less_precise(output[index_instruction], input[succ]) :
-                for var in input[succ] :
-                    input[succ][var] = join(input[succ][var], output[index_instruction][var])
-                worklist.append(succ)
-
-    return input, output
-"""
 
 # ANALYSIS ##################################################################
 
-"""
-def analysis_div_by_zero(filename) :
-    instructions,_ = read_program(read_file(filename))
-    input,_ = worklist_algo(filename)
+def tainted_fct_call(filename):
+    args,_,_ = interprocedural_analysis(filename)
     
-    for i in range(len(instructions)-1) :
-        instr = instructions[i+1].instruction
-        # Check if instruction is a division operation
-        if isinstance(instr,Assign_Operation) and instr.op == "/" and instr.val2IsVar :
-            
-            # Denominator is 0 => ERROR
-            if input[i+1][instr.val2] == Z :
-                print("ERROR: DIV BY 0 (Line %i: denominator is 0)" % (i+1))
+    for fnc in args.keys():
+        if fnc != "main" and args[fnc] == [T]:
+            print(f"WARNING: function {fnc} called with a tainted parameter")
 
-            # Analysis doesn't know denominator value (could be 0 or sth else) => WARNING
-            if input[i+1][instr.val2] == TOP :
-                print("INFO: DIV BY 0 (Line %i: denominator value unknown)" % (i+1))
 
-# MAIN ###################################################################### 
-
-analysis_div_by_zero(filename)
+# MAIN ######################################################################
+tainted_fct_call(filename)
 
 # Show the input and the output tables
 if show_tables :
-    print("--------------- INPUTS LIST ---------------")
-    inp,out = worklist_algo(filename)
-    num = 0
-    for i in inp :
-        print(str(num) + ": " + str(i))
-        num += 1
-    print("-------------- OUTPUTS LIST ---------------")
-    for key in sorted(out.keys()) :
-        print(str(key) + ": " + str(out[key]))
-"""
+    args,ret,functions = interprocedural_analysis(filename)
+    for fnc in args.keys():
+        print_values = "\n" + fnc + ":\n" + "-" * (len(fnc)+1) + "\n"
+        print_values += "| ARGS  |  RET  |\n|-------|-------|\n"
+        
+        if args[fnc] == []:
+            print_values += "|   X   |"
+        else:
+            print_values = print_values + "| " + args[fnc][0] + " |"
+
+        if ret[fnc] == []:
+            print_values += "   X   |"
+        else:
+            print_values = print_values + " " + ret[fnc][0] + " |"
+
+        print(print_values)
+
+    print("\nMain output:\n------------")
+    main_output = functions["main"].output
+    for instruc in main_output.keys():
+        print(f"{instruc}: {main_output[instruc]}")
