@@ -122,7 +122,7 @@ def tainted_fct_call(filename):
 # MAIN ######################################################################
 tainted_fct_call(filename)
 
-# Show the input and the output tables
+# Show args and ret of all functions + output values of main function
 if show_tables :
     args,ret,functions = interprocedural_analysis(filename)
     for fnc in args.keys():
@@ -141,7 +141,7 @@ if show_tables :
 
         print(print_values)
 
-    print("\nMain output:\n------------")
-    main_output = functions["main"].output
-    for instruc in main_output.keys():
-        print(f"{instruc}: {main_output[instruc]}")
+        print(f"\n{fnc} output:")
+        output = functions[fnc].output
+        for instruc in output.keys():
+            print(f"\t{instruc}: {output[instruc]}")
