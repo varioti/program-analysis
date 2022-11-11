@@ -1,0 +1,8 @@
+procedure risk(z)
+    return z
+end procedure
+procedure main(r)
+    b := risk(r)
+    c := 0
+    d := risk(c)
+end procedure

@@ -2,9 +2,9 @@
 op_num = ["+","-","*","/"]
 op_bool = ["<","="]
 
-TOP = "top"
-T = "taint"
-C = "clean"
+TOP = "top   "
+T = "taint "
+C = "clean "
 BOT = "bottom" 
 
 def join(x,y):

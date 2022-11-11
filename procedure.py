@@ -40,7 +40,7 @@ class Procedure:
     def add_return(self, newreturn):
         self.ret.append(newreturn)
 
-    def init_input_output(self, args, ret):
+    def init_input_output(self):
         # Init input and output tables to BOT
         for i in range(self.nb_instructions):
             self.input[i+1] = {}
@@ -48,27 +48,28 @@ class Procedure:
             for var in self.vars:
                 self.input[i+1][var] = BOT
                 self.output[i+1][var] = BOT
-                if var in self.arg :
-                    self.input[i+1][var] = args[self.name][0]
 
     def add_vars(self, newvars):
         self.vars = list(dict.fromkeys(self.vars+newvars))
 
     def add_callee(self, new_callee):
-        if not new_callee in self.callees:
             self.callees.append(new_callee)
 
     def add_caller(self, new_caller):
-        if not new_caller in self.callers:
             self.callers.append(new_caller)
 
     def analysis(self, args, ret):
-        # Init input and output list to BOT
-        self.init_input_output(args,ret)
+        # Function with only a return instruction
+        if len(self.instructions) == 0:
+            if len(self.arg) > 0 and self.arg[0] == self.ret[0]:
+                ret[self.name][0] = join(ret[self.name][0],args[self.name][0])
+            else:
+                ret[self.name][0] = TOP
+            return args, ret
 
-        # But analyze with new value of arg
+        # But init the new value of arg in the 1st input
         if len(self.arg) > 0 :
-            self.input[self.arg[0]] = args[self.name][0]
+            self.input[1][self.arg[0]] = args[self.name][0]
 
         # Worklist algo
         worklist = [1]
@@ -81,14 +82,16 @@ class Procedure:
             self.output[index_instruction] = result
 
             successors = self.instructions[index_instruction].succ(index_instruction,self.nb_instructions)
-            for succ in successors :
-                if is_less_precise(self.output[index_instruction], self.input[succ]) : # Avoid infinite loop
-                    for var in self.input[succ] :
-                        self.input[succ][var] = join(self.input[succ][var], self.output[index_instruction][var])
-                    worklist.append(succ)
+            for s in successors :
+                if is_less_precise(self.output[index_instruction], self.input[s]) : # Avoid infinite loop
+                    for var in self.input[s] :
+                        self.input[s][var] = join(self.input[s][var], self.output[index_instruction][var])
+                    worklist.append(s)
         
         # Update return abstract value for this procedure
         if len(self.ret) > 0 :
-            ret[self.name][0] = self.output[self.nb_instructions][self.ret[0]]
+            old_ret = ret[self.name][0]
+            new_ret = self.output[self.nb_instructions][self.ret[0]]
+            ret[self.name][0] = join(old_ret, new_ret)
 
         return args, ret

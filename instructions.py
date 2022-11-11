@@ -1,3 +1,4 @@
+from copy import deepcopy
 from utils import *
 
 # INSTRUCTIONS REPRESENTATION #########################################################
@@ -19,7 +20,7 @@ class Assign_Constant:
         return self.var+":="+str(self.cst)
 
     def flow_function(self, vars):
-        out_vars = vars.copy()
+        out_vars = vars
         out_vars[self.var] = C
         return out_vars
 
@@ -71,7 +72,7 @@ class Assign_Operation:
         return self.var+":="+self.op
 
     def flow_function(self, vars):
-        out_vars = vars.copy()
+        out_vars = vars
         # Compute abstract value of 1st value in the expression
         if not self.val1IsVar : # constant is clean
             abs_val1 = C
@@ -120,7 +121,7 @@ class Assign_Var:
         return self.var1+":="+self.var2
 
     def flow_function(self, vars):
-        out_vars = vars.copy()
+        out_vars = vars
         # Remplace abstract value of the 1st variable by the abstract value of the 2nd
         out_vars[self.var1] = out_vars[self.var2]
         return out_vars
@@ -156,10 +157,12 @@ class Branch:
         return "if"+self.comp+"0goto"+str(self.goto)
 
     def flow_function(self, vars):
-        return vars.copy()
+        return deepcopy(vars)
 
     def succ(self, index, end):
-        return [index+1,self.goto]
+        if self.goto <= end:
+            return [index+1,self.goto]
+        return [index+1]
 
 
     def get_vars(self):
@@ -179,10 +182,12 @@ class Goto:
         return "goto"+str(self.goto)
 
     def flow_function(self, vars):
-        return vars.copy()
+        return vars
 
     def succ(self, index, end):
-        return [self.goto]
+        if self.goto <= end:
+            return [self.goto]
+        return []
 
     def get_vars(self):
         return []
@@ -200,12 +205,12 @@ class Proc_Call:
         return self.var + ":="+ self.proc_name +"(" +str(self.proc_arg)+")"
 
     def flow_function(self, vars, args, ret):
-        outvars = vars.copy()
-        outargs = args.copy()
-        outvars[self.var] = ret[self.proc_name][0]
-        outargs[self.proc_name][0] = vars[self.proc_arg]
+        new_arg = vars[self.proc_arg]
+        old_arg = args[self.proc_name][0]
+        args[self.proc_name][0] = join(new_arg, old_arg)
+        vars[self.var] = ret[self.proc_name][0]
 
-        return outvars, outargs, ret
+        return vars, args, ret
 
     def succ(self, index, end):
         if index+1 <= end :

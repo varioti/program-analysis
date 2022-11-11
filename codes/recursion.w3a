@@ -1,0 +1,12 @@
+procedure factorial(n)
+    if n > 0 goto 4
+    x := 1
+    goto 7
+    y := n-1
+    z := factorial(y)
+    x := z*n
+    return x
+end procedure
+procedure main(x)
+    f := factorial(x)
+end procedure 
